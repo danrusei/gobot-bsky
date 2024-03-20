@@ -4,8 +4,12 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/bluesky-social/indigo/api/atproto"
+	appbsky "github.com/bluesky-social/indigo/api/bsky"
+	lexutil "github.com/bluesky-social/indigo/lex/util"
+	"github.com/bluesky-social/indigo/util"
 	"github.com/bluesky-social/indigo/xrpc"
 )
 
@@ -73,20 +77,16 @@ func (c *BskyAgent) PostToFeed(ctx context.Context) error {
 
 	post_input := &atproto.RepoCreateRecord_Input{
 		// collection: The NSID of the record collection.
-		Collection:
-		// record: The record itself. Must contain a $type field.
-		Record:
+		Collection: "app.bsky.feed.post",
 		// repo: The handle or DID of the repo (aka, current account).
-		Repo: c.client.Auth.Did
-		// rkey: The Record Key.
-		Rkey: 
-		// swapCommit: Compare and swap with the previous commit by CID.
-		SwapCommit: 
-		// validate: Can be set to 'false' to skip Lexicon schema validation of record data.
-		Validate: true
+		Repo: c.client.Auth.Did,
+		// record: The record itself. Must contain a $type field.
+		Record: &lexutil.LexiconTypeDecoder{Val: &appbsky.FeedPost{
+			Text:      "test, test, test",
+			CreatedAt: time.Now().Format(util.ISO8601),
+		}},
 	}
-	
-	
+
 	response, err := atproto.RepoCreateRecord(ctx, c.client, post_input)
 
 }
