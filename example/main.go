@@ -1,6 +1,10 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+
+	gobot "github.com/danrusei/gobot-bsky"
+)
 
 func main() {
 	handle := "totototo"
@@ -9,19 +13,19 @@ func main() {
 	limit := 4
 	text := "Hello, world"
 
-	did, err := ResolveDID(handle)
+	did, err := gobot.ResolveDID(handle)
 	if err != nil {
 		fmt.Println("Error resolving DID:", err)
 		return
 	}
 
-	apiKey, err := GetApiKey(did, appPassword)
+	apiKey, err := gobot.GetApiKey(did, appPassword)
 	if err != nil {
 		fmt.Println("Error getting API key:", err)
 		return
 	}
 
-	userFeed, err := GetUserFeed(actor, limit, apiKey)
+	userFeed, err := gobot.GetUserFeed(actor, limit, apiKey)
 	if err != nil {
 		fmt.Println("Error getting user feed:", err)
 		return
@@ -29,7 +33,7 @@ func main() {
 
 	fmt.Println("User feed:", userFeed)
 
-	if _, err := PostToFeed(did, text, apiKey); err != nil {
+	if _, err := gobot.PostToFeed(did, text, apiKey); err != nil {
 		fmt.Println("Error posting to feed:", err)
 		return
 	}
