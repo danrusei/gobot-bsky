@@ -61,8 +61,6 @@ func (pb PostBuilder) WithImages(blobs []lexutil.LexBlob, images []Image) PostBu
 }
 
 // Build the request
-// As of now it allows only one Embed type per post:
-// https://github.com/bluesky-social/indigo/blob/main/api/bsky/feedpost.go
 func (pb PostBuilder) Build() appbsky.FeedPost {
 
 	post := appbsky.FeedPost{}
@@ -72,6 +70,8 @@ func (pb PostBuilder) Build() appbsky.FeedPost {
 	post.CreatedAt = time.Now().Format(util.ISO8601)
 
 	// Embed Section (either external links or images)
+	// As of now it allows only one Embed type per post:
+	// https://github.com/bluesky-social/indigo/blob/main/api/bsky/feedpost.go
 	if pb.Link != (Link{}) {
 
 		EmbedExternal_External.Title = pb.Link.Title
