@@ -1,42 +1,28 @@
 package main
 
 import (
-	"fmt"
+	"context"
+	"os"
+
+	"github.com/joho/godotenv"
 
 	gobot "github.com/danrusei/gobot-bsky"
 )
 
 func main() {
-	handle := "totototo"
-	appPassword := "myapppassword"
-	actor := "tototot"
-	limit := 4
-	text := "Hello, world"
 
-	did, err := gobot.ResolveDID(handle)
-	if err != nil {
-		fmt.Println("Error resolving DID:", err)
-		return
-	}
+	godotenv.Load()
+	handle := os.Getenv("HANDLE")
+	apikey := os.Getenv("APIKEY")
+	server := "https://bsky.social"
 
-	apiKey, err := gobot.GetApiKey(did, appPassword)
-	if err != nil {
-		fmt.Println("Error getting API key:", err)
-		return
-	}
+	ctx := context.Background()
 
-	userFeed, err := gobot.GetUserFeed(actor, limit, apiKey)
-	if err != nil {
-		fmt.Println("Error getting user feed:", err)
-		return
-	}
+	agent := gobot.NewAgent(ctx, server, handle, apikey)
+	agent.Connect(ctx)
 
-	fmt.Println("User feed:", userFeed)
+	post := gobot.NewPostBuilder()
 
-	if _, err := gobot.PostToFeed(did, text, apiKey); err != nil {
-		fmt.Println("Error posting to feed:", err)
-		return
-	}
+	agent.PostToFeed(ctx, *post)
 
-	fmt.Println("Posted 'Hello, world' to feed successfully.")
 }
