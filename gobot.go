@@ -1,8 +1,11 @@
 package gobotbsky
 
 import (
+	"bytes"
 	"context"
 	"fmt"
+	"io/ioutil"
+	"log"
 	"net/http"
 
 	"github.com/bluesky-social/indigo/api/atproto"
@@ -13,6 +16,8 @@ import (
 )
 
 const defaultPDS = "https://bsky.social"
+
+var blob []lexutil.LexBlob
 
 // Wrapper over the atproto xrpc transport
 type BskyAgent struct {
@@ -68,6 +73,28 @@ func (c *BskyAgent) Connect(ctx context.Context) error {
 	return nil
 }
 
+func (c *BskyAgent) UploadImages(ctx context.Context, images ...Image) ([]lexutil.LexBlob, error) {
+
+	for _, img := range images {
+		getImage, err := getImageAsBuffer(img.Uri.String())
+		if err != nil {
+			log.Printf("Couldn't retrive the image: %v , %v", img, err)
+		}
+
+		resp, err := atproto.RepoUploadBlob(ctx, c.client, bytes.NewReader(getImage))
+		if err != nil {
+			return nil, err
+		}
+
+		blob = append(blob, lexutil.LexBlob{
+			Ref:      resp.Blob.Ref,
+			MimeType: resp.Blob.MimeType,
+			Size:     resp.Blob.Size,
+		})
+	}
+	return blob, nil
+}
+
 // Post to social app
 func (c *BskyAgent) PostToFeed(ctx context.Context, post appbsky.FeedPost) (string, string, error) {
 
@@ -86,4 +113,26 @@ func (c *BskyAgent) PostToFeed(ctx context.Context, post appbsky.FeedPost) (stri
 	}
 
 	return response.Cid, response.Uri, nil
+}
+
+func getImageAsBuffer(imageURL string) ([]byte, error) {
+	// Fetch image
+	response, err := http.Get(imageURL)
+	if err != nil {
+		return nil, err
+	}
+	defer response.Body.Close()
+
+	// Check response status
+	if response.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("failed to fetch image: %s", response.Status)
+	}
+
+	// Read response body
+	imageData, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	return imageData, nil
 }
