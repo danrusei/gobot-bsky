@@ -34,38 +34,44 @@ type Image struct {
 	Uri   url.URL
 }
 
-func NewPostBuilder(text string) *PostBuilder {
-	return &PostBuilder{
+// Create a simple post with text
+func NewPostBuilder(text string) PostBuilder {
+	return PostBuilder{
 		Text: text,
 	}
 }
 
-func (pb *PostBuilder) WithExternalLink(title string, link url.URL, description string) *PostBuilder {
+// Create a Post with external links
+func (pb PostBuilder) WithExternalLink(title string, link url.URL, description string) PostBuilder {
 
-	return &PostBuilder{
-		Link: Link{
-			Title:       title,
-			Uri:         link,
-			Description: description,
-		},
-	}
+	pb.Link.Title = title
+	pb.Link.Uri = link
+	pb.Link.Description = description
+
+	return pb
 }
 
-func (pb *PostBuilder) WithImages(blobs []lexutil.LexBlob, images ...Image) *PostBuilder {
+// Create a Post with images
+func (pb PostBuilder) WithImages(blobs []lexutil.LexBlob, images []Image) PostBuilder {
 
-	return &PostBuilder{
-		Images:         images,
-		UploadedImages: blobs,
-	}
+	pb.Images = images
+	pb.UploadedImages = blobs
+
+	return pb
 }
 
-func (pb *PostBuilder) Build() appbsky.FeedPost {
+// Build the request
+// As of now it allows only one Embed type per post:
+// https://github.com/bluesky-social/indigo/blob/main/api/bsky/feedpost.go
+func (pb PostBuilder) Build() appbsky.FeedPost {
 
 	post := appbsky.FeedPost{}
 
+	post.Text = pb.Text
 	post.LexiconTypeID = "app.bsky.feed.post"
 	post.CreatedAt = time.Now().Format(util.ISO8601)
 
+	// Embed Section (either external links or images)
 	if pb.Link != (Link{}) {
 
 		EmbedExternal_External.Title = pb.Link.Title
@@ -75,23 +81,24 @@ func (pb *PostBuilder) Build() appbsky.FeedPost {
 		EmbedExternal.LexiconTypeID = "app.bsky.embed.external"
 		EmbedExternal.External = &EmbedExternal_External
 
-	}
+		FeedPost_Embed.EmbedExternal = &EmbedExternal
 
-	if len(pb.Images) != 0 && len(pb.Images) == len(pb.UploadedImages) {
-		images := []*appbsky.EmbedImages_Image{}
+	} else {
+		if len(pb.Images) != 0 && len(pb.Images) == len(pb.UploadedImages) {
+			images := []*appbsky.EmbedImages_Image{}
 
-		for i, img := range pb.Images {
-			EmbedImages_Image.Alt = img.Title
-			EmbedImages_Image.Image = &pb.UploadedImages[i]
-			images = append(images, &EmbedImages_Image)
+			for i, img := range pb.Images {
+				EmbedImages_Image.Alt = img.Title
+				EmbedImages_Image.Image = &pb.UploadedImages[i]
+				images = append(images, &EmbedImages_Image)
+			}
+
+			EmbedImages.LexiconTypeID = "app.bsky.embed.images"
+			EmbedImages.Images = images
+
+			FeedPost_Embed.EmbedImages = &EmbedImages
 		}
-
-		EmbedImages.LexiconTypeID = "app.bsky.embed.images"
-		EmbedImages.Images = images
 	}
-
-	FeedPost_Embed.EmbedExternal = &EmbedExternal
-	FeedPost_Embed.EmbedImages = &EmbedImages
 
 	post.Embed = &FeedPost_Embed
 

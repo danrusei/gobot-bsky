@@ -55,7 +55,7 @@ func main() {
 		log.Fatalf("Parse error, %v", err)
 	}
 
-	post := gobot.NewPostBuilder("Hello to Bluesky").WithImages(blobs, images...).Build()
+	post := gobot.NewPostBuilder("Hello to Bluesky").WithImages(blobs, images).Build()
 
 	cid, uri, err := agent.PostToFeed(ctx, post)
 	if err != nil {
