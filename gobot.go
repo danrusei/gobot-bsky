@@ -4,21 +4,15 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"net/url"
-	"time"
 
 	"github.com/bluesky-social/indigo/api/atproto"
 	appbsky "github.com/bluesky-social/indigo/api/bsky"
 	lexutil "github.com/bluesky-social/indigo/lex/util"
-	"github.com/bluesky-social/indigo/util"
+
 	"github.com/bluesky-social/indigo/xrpc"
 )
 
 const defaultPDS = "https://bsky.social"
-
-var EmbedExternal appbsky.EmbedExternal
-var EmbedExternal_External appbsky.EmbedExternal_External
-var FeedPost_Embed appbsky.FeedPost_Embed
 
 // Wrapper over the atproto xrpc transport
 type BskyAgent struct {
@@ -74,61 +68,7 @@ func (c *BskyAgent) Connect(ctx context.Context) error {
 	return nil
 }
 
-// construct the post
-type PostBuilder struct {
-	Text      string
-	EmbedLink EmbedLink
-	//EmbedImage EmbedImage
-}
-
-type EmbedLink struct {
-	Title       string
-	Uri         url.URL
-	Description string
-}
-
-func NewPostBuilder(text string) *PostBuilder {
-	return &PostBuilder{
-		Text: text,
-	}
-}
-
-func (pb *PostBuilder) WithExternalLink(title string, link url.URL, description string) *PostBuilder {
-
-	return &PostBuilder{
-		EmbedLink: EmbedLink{
-			Title:       title,
-			Uri:         link,
-			Description: description,
-		},
-	}
-}
-
-func (pb *PostBuilder) Build() appbsky.FeedPost {
-
-	post := appbsky.FeedPost{}
-
-	post.LexiconTypeID = "app.bsky.feed.post"
-	post.CreatedAt = time.Now().Format(util.ISO8601)
-
-	if pb.EmbedLink != (EmbedLink{}) {
-
-		EmbedExternal_External.Title = pb.EmbedLink.Title
-		EmbedExternal_External.Uri = pb.EmbedLink.Uri.String()
-		EmbedExternal_External.Description = pb.EmbedLink.Description
-
-		EmbedExternal.LexiconTypeID = "app.bsky.embed.external"
-		EmbedExternal.External = &EmbedExternal_External
-
-	}
-
-	FeedPost_Embed.EmbedExternal = &EmbedExternal
-
-	post.Embed = &FeedPost_Embed
-
-	return post
-}
-
+// Post to social app
 func (c *BskyAgent) PostToFeed(ctx context.Context, post appbsky.FeedPost) (string, string, error) {
 
 	post_input := &atproto.RepoCreateRecord_Input{
