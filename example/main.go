@@ -2,6 +2,9 @@ package main
 
 import (
 	"context"
+	"fmt"
+	"log"
+	"net/url"
 	"os"
 
 	"github.com/joho/godotenv"
@@ -21,8 +24,17 @@ func main() {
 	agent := gobot.NewAgent(ctx, server, handle, apikey)
 	agent.Connect(ctx)
 
-	post := gobot.NewPostBuilder()
+	u, err := url.Parse("https://go.dev/")
+	if err != nil {
+		log.Fatalf("Parse error, %v", err)
+	}
+	post := gobot.NewPostBuilder("Hello to Bluesky").WithExternalLink("Gopher", *u, "Build simple, secure, scalable systems with Go").Build()
 
-	agent.PostToFeed(ctx, *post)
+	cid, uri, err := agent.PostToFeed(ctx, post)
+	if err != nil {
+		fmt.Printf("Got error: %v", err)
+	} else {
+		fmt.Printf("Succes: Cid = %v , Uri = %v", cid, uri)
+	}
 
 }
