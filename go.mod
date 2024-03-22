@@ -2,7 +2,10 @@ module github.com/danrusei/gobot-bsky
 
 go 1.21.6
 
-require github.com/bluesky-social/indigo v0.0.0-20240313175749-733547c2ba2c
+require (
+	github.com/bluesky-social/indigo v0.0.0-20240313175749-733547c2ba2c
+	github.com/joho/godotenv v1.5.1
+)
 
 require (
 	github.com/carlmjohnson/versioninfo v0.22.5 // indirect
@@ -27,7 +30,6 @@ require (
 	github.com/ipfs/go-log/v2 v2.5.1 // indirect
 	github.com/ipfs/go-metrics-interface v0.0.1 // indirect
 	github.com/jbenet/goprocess v0.1.4 // indirect
-	github.com/joho/godotenv v1.5.1 // indirect
 	github.com/klauspost/cpuid/v2 v2.2.7 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/minio/sha256-simd v1.0.1 // indirect
