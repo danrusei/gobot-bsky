@@ -12,6 +12,8 @@ import (
 	"github.com/bluesky-social/indigo/util"
 )
 
+var FeedPost_Embed appbsky.FeedPost_Embed
+
 type Facet_Type int
 
 const (
@@ -20,21 +22,23 @@ const (
 	Facet_Tag
 )
 
-var FeedPost_Embed appbsky.FeedPost_Embed
-
 // construct the post
 type PostBuilder struct {
-	Text           string
-	Facet          []Facet
-	Link           Link
-	Images         []Image
-	UploadedImages []lexutil.LexBlob
+	Text  string
+	Facet []Facet
+	Embed Embed
 }
 
 type Facet struct {
 	Ftype   Facet_Type
 	Value   string
 	T_facet string
+}
+
+type Embed struct {
+	Link           Link
+	Images         []Image
+	UploadedImages []lexutil.LexBlob
 }
 
 type Link struct {
@@ -71,9 +75,9 @@ func (pb PostBuilder) WithFacet(ftype Facet_Type, value string, text string) Pos
 // Create a Post with external links
 func (pb PostBuilder) WithExternalLink(title string, link url.URL, description string) PostBuilder {
 
-	pb.Link.Title = title
-	pb.Link.Uri = link
-	pb.Link.Description = description
+	pb.Embed.Link.Title = title
+	pb.Embed.Link.Uri = link
+	pb.Embed.Link.Description = description
 
 	return pb
 }
@@ -81,8 +85,8 @@ func (pb PostBuilder) WithExternalLink(title string, link url.URL, description s
 // Create a Post with images
 func (pb PostBuilder) WithImages(blobs []lexutil.LexBlob, images []Image) PostBuilder {
 
-	pb.Images = images
-	pb.UploadedImages = blobs
+	pb.Embed.Images = images
+	pb.Embed.UploadedImages = blobs
 
 	return pb
 }
@@ -162,40 +166,39 @@ func (pb PostBuilder) Build() (appbsky.FeedPost, error) {
 	// Embed Section (either external links or images)
 	// As of now it allows only one Embed type per post:
 	// https://github.com/bluesky-social/indigo/blob/main/api/bsky/feedpost.go
-	if pb.Link != (Link{}) {
-		var EmbedExternal appbsky.EmbedExternal
-		var EmbedExternal_External appbsky.EmbedExternal_External
+	if pb.Embed.Link != (Link{}) {
 
-		EmbedExternal_External.Title = pb.Link.Title
-		EmbedExternal_External.Uri = pb.Link.Uri.String()
-		EmbedExternal_External.Description = pb.Link.Description
-
-		EmbedExternal.LexiconTypeID = "app.bsky.embed.external"
-		EmbedExternal.External = &EmbedExternal_External
-
-		FeedPost_Embed.EmbedExternal = &EmbedExternal
+		FeedPost_Embed.EmbedExternal = &appbsky.EmbedExternal{
+			LexiconTypeID: "app.bsky.embed.external",
+			External: &appbsky.EmbedExternal_External{
+				Title:       pb.Embed.Link.Title,
+				Uri:         pb.Embed.Link.Uri.String(),
+				Description: pb.Embed.Link.Description,
+			},
+		}
 
 	} else {
-		if len(pb.Images) != 0 && len(pb.Images) == len(pb.UploadedImages) {
-			var EmbedImages appbsky.EmbedImages
-			var EmbedImages_Image appbsky.EmbedImages_Image
-			images := []*appbsky.EmbedImages_Image{}
+		if len(pb.Embed.Images) != 0 && len(pb.Embed.Images) == len(pb.Embed.UploadedImages) {
 
-			for i, img := range pb.Images {
-				EmbedImages_Image.Alt = img.Title
-				EmbedImages_Image.Image = &pb.UploadedImages[i]
-				images = append(images, &EmbedImages_Image)
+			EmbedImages := appbsky.EmbedImages{
+				LexiconTypeID: "app.bsky.embed.images",
+				Images:        make([]*appbsky.EmbedImages_Image, len(pb.Embed.Images)),
 			}
 
-			EmbedImages.LexiconTypeID = "app.bsky.embed.images"
-			EmbedImages.Images = images
+			for i, img := range pb.Embed.Images {
+				EmbedImages.Images[i] = &appbsky.EmbedImages_Image{
+					Alt:   img.Title,
+					Image: &pb.Embed.UploadedImages[i],
+				}
+			}
 
 			FeedPost_Embed.EmbedImages = &EmbedImages
+
 		}
 	}
 
 	// avoid error when trying to marshal empty field (*bsky.FeedPost_Embed)
-	if len(pb.Images) != 0 || pb.Link.Title != "" {
+	if len(pb.Embed.Images) != 0 || pb.Embed.Link.Title != "" {
 		post.Embed = &FeedPost_Embed
 	}
 

@@ -3,6 +3,8 @@ package main
 import (
 	"context"
 	"fmt"
+	"log"
+	"net/url"
 	"os"
 
 	"github.com/joho/godotenv"
@@ -28,7 +30,7 @@ func main() {
 	// based on the selected type it expect the second argument to be URI, DID, or TAG
 	// the last function argument is the text, part of the original text that is modifiend in Richtext
 
-	post1, err := gobot.NewPostBuilder("Hello to Bluesky,  the best open social network").WithFacet(gobot.Facet_Link, "https://docs.bsky.app/", "Bluesky").WithFacet(gobot.Facet_Tag, "bsky", "open social").Build()
+	post1, err := gobot.NewPostBuilder("Hello to Bluesky, the coolest open social network").WithFacet(gobot.Facet_Link, "https://docs.bsky.app/", "Bluesky").WithFacet(gobot.Facet_Tag, "bsky", "open social").Build()
 	if err != nil {
 		fmt.Printf("Got error: %v", err)
 	}
@@ -43,53 +45,50 @@ func main() {
 	// Embed Links section
 	// =======================================
 
-	// u, err := url.Parse("https://go.dev/")
-	// if err != nil {
-	// 	log.Fatalf("Parse error, %v", err)
-	// }
-	// post2 := gobot.NewPostBuilder("Hello to Bluesky").WithExternalLink("Gopher", *u, "Build simple, secure, scalable systems with Go").Build()
+	u, err := url.Parse("https://go.dev/")
+	if err != nil {
+		log.Fatalf("Parse error, %v", err)
+	}
+	post2, err := gobot.NewPostBuilder("Hello to Go on Bluesky").WithExternalLink("Go Programming Language", *u, "Build simple, secure, scalable systems with Go").Build()
+	if err != nil {
+		fmt.Printf("Got error: %v", err)
+	}
 
-	// cid2, uri2, err := agent.PostToFeed(ctx, post2)
-	// if err != nil {
-	// 	fmt.Printf("Got error: %v", err)
-	// } else {
-	// 	fmt.Printf("Succes: Cid = %v , Uri = %v", cid2, uri2)
-	// }
+	cid2, uri2, err := agent.PostToFeed(ctx, post2)
+	if err != nil {
+		fmt.Printf("Got error: %v", err)
+	} else {
+		fmt.Printf("Succes: Cid = %v , Uri = %v", cid2, uri2)
+	}
 
 	// Embed Images section
 	// =======================================
-	// images := []gobot.Image{}
+	images := []gobot.Image{}
 
-	// url1, err := url.Parse("https://www.freecodecamp.org/news/content/images/2021/10/golang.png")
-	// if err != nil {
-	// 	log.Fatalf("Parse error, %v", err)
-	// }
-	// images = append(images, gobot.Image{
-	// 	Title: "Golang",
-	// 	Uri:   *url1,
-	// })
+	url1, err := url.Parse("https://www.freecodecamp.org/news/content/images/2021/10/golang.png")
+	if err != nil {
+		log.Fatalf("Parse error, %v", err)
+	}
+	images = append(images, gobot.Image{
+		Title: "Golang",
+		Uri:   *url1,
+	})
 
-	// url2, err := url.Parse("https://pkg.go.dev/static/shared/gopher/package-search-700x300.jpeg")
-	// if err != nil {
-	// 	log.Fatalf("Parse error, %v", err)
-	// }
-	// images = append(images, gobot.Image{
-	// 	Title: "pkg.go.dev",
-	// 	Uri:   *url2,
-	// })
+	blobs, err := agent.UploadImages(ctx, images...)
+	if err != nil {
+		log.Fatalf("Parse error, %v", err)
+	}
 
-	// blobs, err := agent.UploadImages(ctx, images...)
-	// if err != nil {
-	// 	log.Fatalf("Parse error, %v", err)
-	// }
+	post3, err := gobot.NewPostBuilder("Gobot-bsky - a simple golang lib to write Bluesky bots").WithImages(blobs, images).Build()
+	if err != nil {
+		fmt.Printf("Got error: %v", err)
+	}
 
-	// post3 := gobot.NewPostBuilder("Hello to Bluesky").WithImages(blobs, images).Build()
-
-	// cid3, uri3, err := agent.PostToFeed(ctx, post3)
-	// if err != nil {
-	// 	fmt.Printf("Got error: %v", err)
-	// } else {
-	// 	fmt.Printf("Succes: Cid = %v , Uri = %v", cid3, uri3)
-	// }
+	cid3, uri3, err := agent.PostToFeed(ctx, post3)
+	if err != nil {
+		fmt.Printf("Got error: %v", err)
+	} else {
+		fmt.Printf("Succes: Cid = %v , Uri = %v", cid3, uri3)
+	}
 
 }
