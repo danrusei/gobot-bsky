@@ -31,7 +31,10 @@ func main() {
 	// based on the selected type it expect the second argument to be URI, DID, or TAG
 	// the last function argument is the text, part of the original text that is modifiend in Richtext
 
-	post1, err := gobot.NewPostBuilder("Hello to Bluesky, the coolest open social network").WithFacet(gobot.Facet_Link, "https://docs.bsky.app/", "Bluesky").WithFacet(gobot.Facet_Tag, "bsky", "open social").Build()
+	post1, err := gobot.NewPostBuilder("Hello to Bluesky, the coolest open social network").
+		WithFacet(gobot.Facet_Link, "https://docs.bsky.app/", "Bluesky").
+		WithFacet(gobot.Facet_Tag, "bsky", "open social").
+		Build()
 	if err != nil {
 		fmt.Printf("Got error: %v", err)
 	}
@@ -50,7 +53,9 @@ func main() {
 	if err != nil {
 		log.Fatalf("Parse error, %v", err)
 	}
-	post2, err := gobot.NewPostBuilder("Hello to Go on Bluesky").WithExternalLink("Go Programming Language", *u, "Build simple, secure, scalable systems with Go").Build()
+	post2, err := gobot.NewPostBuilder("Hello to Go on Bluesky").
+		WithExternalLink("Go Programming Language", *u, "Build simple, secure, scalable systems with Go").
+		Build()
 	if err != nil {
 		fmt.Printf("Got error: %v", err)
 	}
@@ -80,7 +85,9 @@ func main() {
 		log.Fatalf("Parse error, %v", err)
 	}
 
-	post3, err := gobot.NewPostBuilder("Gobot-bsky - a simple golang lib to write Bluesky bots").WithImages(blobs, images).Build()
+	post3, err := gobot.NewPostBuilder("Gobot-bsky - a simple golang lib to write Bluesky bots").
+		WithImages(blobs, images).
+		Build()
 	if err != nil {
 		fmt.Printf("Got error: %v", err)
 	}
