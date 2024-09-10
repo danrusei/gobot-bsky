@@ -95,6 +95,27 @@ func (c *BskyAgent) UploadImages(ctx context.Context, images ...Image) ([]lexuti
 	return blob, nil
 }
 
+func (c *BskyAgent) UploadImage(ctx context.Context, image Image) (*lexutil.LexBlob, error) {
+
+	getImage, err := getImageAsBuffer(image.Uri.String())
+	if err != nil {
+		log.Printf("Couldn't retrive the image: %v , %v", image, err)
+	}
+
+	resp, err := atproto.RepoUploadBlob(ctx, c.client, bytes.NewReader(getImage))
+	if err != nil {
+		return nil, err
+	}
+
+	blob := lexutil.LexBlob{
+		Ref:      resp.Blob.Ref,
+		MimeType: resp.Blob.MimeType,
+		Size:     resp.Blob.Size,
+	}
+
+	return &blob, nil
+}
+
 // Post to social app
 func (c *BskyAgent) PostToFeed(ctx context.Context, post appbsky.FeedPost) (string, string, error) {
 

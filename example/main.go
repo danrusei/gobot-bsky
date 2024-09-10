@@ -61,13 +61,13 @@ func main() {
 		Title: "Golang",
 		Uri:   *previewUrl,
 	}
-	previewImageBlob, err := agent.UploadImages(ctx, previewImage)
+	previewImageBlob, err := agent.UploadImage(ctx, previewImage)
 	if err != nil {
 		log.Fatalf("Parse error, %v", err)
 	}
 
 	post2, err := gobot.NewPostBuilder("Hello to Go on Bluesky").
-		WithExternalLink("Go Programming Language", *u, "Build simple, secure, scalable systems with Go", previewImageBlob[0]).
+		WithExternalLink("Go Programming Language", *u, "Build simple, secure, scalable systems with Go", *previewImageBlob).
 		Build()
 	if err != nil {
 		fmt.Printf("Got error: %v", err)
