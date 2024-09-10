@@ -52,8 +52,22 @@ func main() {
 	if err != nil {
 		log.Fatalf("Parse error, %v", err)
 	}
+
+	previewUrl, err := url.Parse("https://www.freecodecamp.org/news/content/images/2021/10/golang.png")
+	if err != nil {
+		log.Fatalf("Parse error, %v", err)
+	}
+	previewImage := gobot.Image{
+		Title: "Golang",
+		Uri:   *previewUrl,
+	}
+	previewImageBlob, err := agent.UploadImage(ctx, previewImage)
+	if err != nil {
+		log.Fatalf("Parse error, %v", err)
+	}
+
 	post2, err := gobot.NewPostBuilder("Hello to Go on Bluesky").
-		WithExternalLink("Go Programming Language", *u, "Build simple, secure, scalable systems with Go").
+		WithExternalLink("Go Programming Language", *u, "Build simple, secure, scalable systems with Go", *previewImageBlob).
 		Build()
 	if err != nil {
 		fmt.Printf("Got error: %v", err)

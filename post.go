@@ -41,10 +41,12 @@ type Embed struct {
 	UploadedImages []lexutil.LexBlob
 }
 
+
 type Link struct {
 	Title       string
 	Uri         url.URL
 	Description string
+	Thumb 		lexutil.LexBlob
 }
 
 type Image struct {
@@ -73,11 +75,12 @@ func (pb PostBuilder) WithFacet(ftype Facet_Type, value string, text string) Pos
 }
 
 // Create a Post with external links
-func (pb PostBuilder) WithExternalLink(title string, link url.URL, description string) PostBuilder {
-
+func (pb PostBuilder) WithExternalLink(title string, link url.URL, description string, thumb lexutil.LexBlob) PostBuilder {
+	
 	pb.Embed.Link.Title = title
 	pb.Embed.Link.Uri = link
 	pb.Embed.Link.Description = description
+	pb.Embed.Link.Thumb = thumb
 
 	return pb
 }
@@ -174,6 +177,7 @@ func (pb PostBuilder) Build() (appbsky.FeedPost, error) {
 				Title:       pb.Embed.Link.Title,
 				Uri:         pb.Embed.Link.Uri.String(),
 				Description: pb.Embed.Link.Description,
+				Thumb: 		 &pb.Embed.Link.Thumb,
 			},
 		}
 

@@ -53,8 +53,22 @@ func main() {
 	if err != nil {
 		log.Fatalf("Parse error, %v", err)
 	}
+
+	previewUrl, err := url.Parse("https://www.freecodecamp.org/news/content/images/2021/10/golang.png")
+	if err != nil {
+		log.Fatalf("Parse error, %v", err)
+	}
+	previewImage := gobot.Image{
+		Title: "Golang",
+		Uri:   *previewUrl,
+	}
+	previewImageBlob, err := agent.UploadImage(ctx, previewImage)
+	if err != nil {
+		log.Fatalf("Parse error, %v", err)
+	}
+
 	post2, err := gobot.NewPostBuilder("Hello to Go on Bluesky").
-		WithExternalLink("Go Programming Language", *u, "Build simple, secure, scalable systems with Go").
+		WithExternalLink("Go Programming Language", *u, "Build simple, secure, scalable systems with Go", *previewImageBlob).
 		Build()
 	if err != nil {
 		fmt.Printf("Got error: %v", err)
@@ -105,3 +119,6 @@ func main() {
 ## The results of running the above code
 
 ![Content generated with gobot-bsky](bsky_bot_in_go.png "Content generated with gobot-bsky")
+
+You can now embed a preview image to the website url
+![Content generated with gobot-bsky](bsky_bot_preview_link.png "Content generated with gobot-bsky")
