@@ -9,7 +9,6 @@ import (
 
 	appbsky "github.com/bluesky-social/indigo/api/bsky"
 	lexutil "github.com/bluesky-social/indigo/lex/util"
-	"github.com/bluesky-social/indigo/util"
 )
 
 var FeedPost_Embed appbsky.FeedPost_Embed
@@ -41,12 +40,11 @@ type Embed struct {
 	UploadedImages []lexutil.LexBlob
 }
 
-
 type Link struct {
 	Title       string
 	Uri         url.URL
 	Description string
-	Thumb 		lexutil.LexBlob
+	Thumb       lexutil.LexBlob
 }
 
 type Image struct {
@@ -76,7 +74,7 @@ func (pb PostBuilder) WithFacet(ftype Facet_Type, value string, text string) Pos
 
 // Create a Post with external links
 func (pb PostBuilder) WithExternalLink(title string, link url.URL, description string, thumb lexutil.LexBlob) PostBuilder {
-	
+
 	pb.Embed.Link.Title = title
 	pb.Embed.Link.Uri = link
 	pb.Embed.Link.Description = description
@@ -101,7 +99,7 @@ func (pb PostBuilder) Build() (appbsky.FeedPost, error) {
 
 	post.Text = pb.Text
 	post.LexiconTypeID = "app.bsky.feed.post"
-	post.CreatedAt = time.Now().Format(util.ISO8601)
+	post.CreatedAt = time.Now().Format(time.RFC3339)
 
 	// RichtextFacet Section
 	// https://docs.bsky.app/docs/advanced-guides/post-richtext
@@ -177,7 +175,7 @@ func (pb PostBuilder) Build() (appbsky.FeedPost, error) {
 				Title:       pb.Embed.Link.Title,
 				Uri:         pb.Embed.Link.Uri.String(),
 				Description: pb.Embed.Link.Description,
-				Thumb: 		 &pb.Embed.Link.Thumb,
+				Thumb:       &pb.Embed.Link.Thumb,
 			},
 		}
 
