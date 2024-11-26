@@ -3,6 +3,7 @@ package gobotbsky
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -18,6 +19,7 @@ import (
 const defaultPDS = "https://bsky.social"
 
 var blob []lexutil.LexBlob
+var ErrExpiredToken = errors.New("XRPC ERROR 400: ExpiredToken: Token has expired")
 
 // Wrapper over the atproto xrpc transport
 type BskyAgent struct {
@@ -129,11 +131,40 @@ func (c *BskyAgent) PostToFeed(ctx context.Context, post appbsky.FeedPost) (stri
 	}
 
 	response, err := atproto.RepoCreateRecord(ctx, c.client, post_input)
+
 	if err != nil {
-		return "", "", fmt.Errorf("unable to post, %v", err)
+		if errors.Is(err, ErrExpiredToken) {
+			err = c.refreshToken(ctx)
+			if err != nil {
+				return "", "", fmt.Errorf("unable to post, %v", err)
+			}
+
+			return c.PostToFeed(ctx, post)
+		} else {
+			return "", "", fmt.Errorf("unable to post, %v", err)
+		}
 	}
 
 	return response.Cid, response.Uri, nil
+}
+
+func (c *BskyAgent) refreshToken(ctx context.Context) error {
+	newinfo, err := atproto.ServerRefreshSession(ctx, c.client)
+	if err != nil {
+		// In the case of the refresh token being expired
+		if errors.Is(err, ErrExpiredToken) {
+			return c.Connect(ctx)
+		}
+		return err
+	}
+
+	c.client.Auth = &xrpc.AuthInfo{
+		AccessJwt:  newinfo.AccessJwt,
+		RefreshJwt: newinfo.RefreshJwt,
+		Handle:     newinfo.Handle,
+		Did:        newinfo.Did,
+	}
+	return nil
 }
 
 func getImageAsBuffer(imageURL string) ([]byte, error) {
