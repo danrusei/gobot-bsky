@@ -133,6 +133,7 @@ func (c *BskyAgent) PostToFeed(ctx context.Context, post appbsky.FeedPost) (stri
 	response, err := atproto.RepoCreateRecord(ctx, c.client, post_input)
 
 	if err != nil {
+		fmt.Println("[Debug] Got error while trying to post")
 		if errors.Is(err, ErrExpiredToken) {
 			err = c.refreshToken(ctx)
 			if err != nil {
@@ -149,10 +150,12 @@ func (c *BskyAgent) PostToFeed(ctx context.Context, post appbsky.FeedPost) (stri
 }
 
 func (c *BskyAgent) refreshToken(ctx context.Context) error {
+	fmt.Println("[Debug] Trying to refresh token!")
 	newinfo, err := atproto.ServerRefreshSession(ctx, c.client)
 	if err != nil {
 		// In the case of the refresh token being expired
 		if errors.Is(err, ErrExpiredToken) {
+			fmt.Println("[Debug] Fallback, reconnecting")
 			return c.Connect(ctx)
 		}
 		return err
