@@ -7,6 +7,8 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"net/url"
+	"os"
 
 	"github.com/bluesky-social/indigo/api/atproto"
 	appbsky "github.com/bluesky-social/indigo/api/bsky"
@@ -76,7 +78,7 @@ func (c *BskyAgent) Connect(ctx context.Context) error {
 func (c *BskyAgent) UploadImages(ctx context.Context, images ...Image) ([]lexutil.LexBlob, error) {
 
 	for _, img := range images {
-		getImage, err := getImageAsBuffer(img.Uri.String())
+		getImage, err := getImageAsBuffer(img.Uri)
 		if err != nil {
 			log.Printf("Couldn't retrive the image: %v , %v", img, err)
 		}
@@ -97,7 +99,7 @@ func (c *BskyAgent) UploadImages(ctx context.Context, images ...Image) ([]lexuti
 
 func (c *BskyAgent) UploadImage(ctx context.Context, image Image) (*lexutil.LexBlob, error) {
 
-	getImage, err := getImageAsBuffer(image.Uri.String())
+	getImage, err := getImageAsBuffer(image.Uri)
 	if err != nil {
 		log.Printf("Couldn't retrive the image: %v , %v", image, err)
 	}
@@ -136,24 +138,32 @@ func (c *BskyAgent) PostToFeed(ctx context.Context, post appbsky.FeedPost) (stri
 	return response.Cid, response.Uri, nil
 }
 
-func getImageAsBuffer(imageURL string) ([]byte, error) {
-	// Fetch image
-	response, err := http.Get(imageURL)
-	if err != nil {
-		return nil, err
-	}
-	defer response.Body.Close()
+func getImageAsBuffer(imageURL url.URL) ([]byte, error) {
+	
+	if (imageURL.Scheme == "file") {
+		bytes, err := os.ReadFile(imageURL.Path)
+		if err != nil {
+			return nil, err
+		}
+		return bytes, nil
+	} else {
+		// Fetch image
+		response, err := http.Get(imageURL.String())
+		if err != nil {
+			return nil, err
+		}
+		defer response.Body.Close()
 
-	// Check response status
-	if response.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("failed to fetch image: %s", response.Status)
-	}
+		// Check response status
+		if response.StatusCode != http.StatusOK {
+			return nil, fmt.Errorf("failed to fetch image: %s", response.Status)
+		}
 
-	// Read response body
-	imageData, err := ioutil.ReadAll(response.Body)
-	if err != nil {
-		return nil, err
+		// Read response body
+		imageData, err := ioutil.ReadAll(response.Body)
+		if err != nil {
+			return nil, err
+		}
+		return imageData, nil
 	}
-
-	return imageData, nil
 }
