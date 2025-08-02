@@ -17,8 +17,6 @@ import (
 
 const defaultPDS = "https://bsky.social"
 
-var blob []lexutil.LexBlob
-
 // Wrapper over the atproto xrpc transport
 type BskyAgent struct {
 	// xrpc transport, a wrapper around http server
@@ -74,7 +72,7 @@ func (c *BskyAgent) Connect(ctx context.Context) error {
 }
 
 func (c *BskyAgent) UploadImages(ctx context.Context, images ...Image) ([]lexutil.LexBlob, error) {
-
+	var blobs []lexutil.LexBlob
 	for _, img := range images {
 		getImage, err := getImageAsBuffer(img.Uri.String())
 		if err != nil {
@@ -86,13 +84,13 @@ func (c *BskyAgent) UploadImages(ctx context.Context, images ...Image) ([]lexuti
 			return nil, err
 		}
 
-		blob = append(blob, lexutil.LexBlob{
+		blobs = append(blobs, lexutil.LexBlob{
 			Ref:      resp.Blob.Ref,
 			MimeType: resp.Blob.MimeType,
 			Size:     resp.Blob.Size,
 		})
 	}
-	return blob, nil
+	return blobs, nil
 }
 
 func (c *BskyAgent) UploadImage(ctx context.Context, image Image) (*lexutil.LexBlob, error) {
