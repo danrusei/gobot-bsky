@@ -1,14 +1,14 @@
 module github.com/danrusei/gobot-bsky
 
-go 1.21.6
+go 1.26.1
 
 require (
-	github.com/bluesky-social/indigo v0.0.0-20240313175749-733547c2ba2c
+	github.com/bluesky-social/indigo v0.0.0-20260529183052-5368f55344e0
 	github.com/joho/godotenv v1.5.1
 )
 
 require (
-	github.com/carlmjohnson/versioninfo v0.22.5 // indirect
+	github.com/earthboundkid/versioninfo/v2 v2.24.1 // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
 	github.com/go-logr/logr v1.4.1 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
@@ -42,7 +42,7 @@ require (
 	github.com/opentracing/opentracing-go v1.2.0 // indirect
 	github.com/polydawn/refmt v0.89.1-0.20221221234430-40501e09de1f // indirect
 	github.com/spaolacci/murmur3 v1.1.0 // indirect
-	github.com/whyrusleeping/cbor-gen v0.1.1-0.20240311221002-68b9f235c302 // indirect
+	github.com/whyrusleeping/cbor-gen v0.2.1-0.20241030202151-b7a6831be65e // indirect
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.46.1 // indirect
 	go.opentelemetry.io/otel v1.21.0 // indirect
 	go.opentelemetry.io/otel/metric v1.21.0 // indirect
@@ -51,7 +51,7 @@ require (
 	go.uber.org/multierr v1.11.0 // indirect
 	go.uber.org/zap v1.26.0 // indirect
 	golang.org/x/crypto v0.21.0 // indirect
-	golang.org/x/sys v0.18.0 // indirect
+	golang.org/x/sys v0.22.0 // indirect
 	golang.org/x/xerrors v0.0.0-20231012003039-104605ab7028 // indirect
 	lukechampine.com/blake3 v1.2.1 // indirect
 )
